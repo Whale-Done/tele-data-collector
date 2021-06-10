@@ -1,7 +1,19 @@
-from flask import request
+import redis
+
+from flask import request, Flask
 import telegram
+from flask_redis import FlaskRedis
+from flask_sqlalchemy import SQLAlchemy
+
 from tracker_bot.mastermind import mainCommandHandler
-from tracker_bot.credentials import URL, reset_key, bot_token, bot_user_name
+from tracker_bot.credentials import URL, reset_key, bot_token
+
+app = Flask(__name__)
+redis_client = FlaskRedis(app)
+
+# redis_client.set('potato',1)
+# print(redis_client.get('potato'))
+# redis_client.delete('potato')
 
 from tracker_app import create_app
 
@@ -13,6 +25,29 @@ bot = telegram.Bot(token=bot_token)
 app = create_app()
 
 TOKEN = bot_token
+
+class ExpenseEntry(db.Model):
+    __tablename__ = "entries"
+    __table_args__ = {'extend_existing': True}
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(128))
+    amount = db.Column(db.String(128))
+    category = db.Column(db.String(128))
+    description = db.Column(db.String(128))
+    datetime = db.Column(db.String(128))
+    submit_time = db.Column(db.String(128))
+    type = db.Column(db.String(128))
+
+    # def __init__(self, username, amount, category, description, datetime, submit_time, type):
+    # def __init__(self):
+        # self.username = username
+        # self.amount = amount
+        # self.category = category
+        # self.description = description
+        # self.datetime = datetime
+        # self.submit_time = submit_time
+        # self.type = type
 
 
 @app.route('/{}'.format(TOKEN), methods=['POST'])
@@ -27,7 +62,10 @@ def respond():
         print("some error has occured internally")
 
     if update.message:
-        mainCommandHandler(incoming_message=update.messagem, telebot_instance=bot)
+        state = mainCommandHandler(incoming_message=update.message, telebot_instance=bot, redis_client=redis_client)
+        if state is not None:
+            username = update.message.from_user['username']
+            redis_client.set(username + "state", state)
 
     return 'ok'
 
@@ -74,7 +112,16 @@ def drop_webhook():
         return "web hook delete failure"
 
 
+@app.route('/createall', methods=['GET'])
+def create_db_table():
+    db.create_all()
+    return "Created"
+
+
 if __name__ == '__main__':
     # note the threaded arg which allow
     # your app to have more than one thread
-    app.run(threaded=True, debug=True, ssl_context='adhoc')
+    # flask run --host=0.0.0.0
+    # http://172.31.111.25:5000/
+    # ./ngrok http 172.31.111.25:5000
+    app.run(threaded=True, debug=False)

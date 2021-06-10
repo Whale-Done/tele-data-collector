@@ -6,3 +6,9 @@ class Config:
     USER_ENABLE_EMAIL = False  # Disable email authentication
     USER_ENABLE_USERNAME = True  # Enable username authentication
     USER_REQUIRE_RETYPE_PASSWORD = False
+    # for deploy
+    # REDIS_URL = "redis://leipetushood:1234567890@localhost:6379"
+    # SQLALCHEMY_DATABASE_URI = ''
+    # for debug
+    REDIS_URL = "redis://leipetushood:1234567890@localhost:6379"
+    SQLALCHEMY_DATABASE_URI = 'postgresql://leipetushood:1234567890@localhost:5432/whalemoney'
