@@ -16,10 +16,10 @@ def mainCommandHandler(incoming_message, telebot_instance):
     try:
         # print(incoming_message.text)
         text = incoming_message.text.encode('utf-8').decode()
-        if (text == "benny"):
+        if text == "benny":
             telebot_instance.sendMessage(chat_id=chat_id, text="Benny is gay", reply_to_message_id=msg_id)
             return
-        elif (text == "shem"):
+        elif text == "shem":
             telebot_instance.sendMessage(chat_id=chat_id, text="Shem is Limos", reply_to_message_id=msg_id)
             return
     except:

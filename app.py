@@ -77,4 +77,4 @@ def drop_webhook():
 if __name__ == '__main__':
     # note the threaded arg which allow
     # your app to have more than one thread
-    app.run(threaded=True, debug=True)
+    app.run(threaded=True, debug=True, ssl_context='adhoc')
