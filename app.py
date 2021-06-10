@@ -1,5 +1,3 @@
-import redis
-
 from flask import request, Flask
 import telegram
 from flask_redis import FlaskRedis
@@ -10,10 +8,6 @@ from tracker_bot.credentials import URL, reset_key, bot_token
 
 app = Flask(__name__)
 redis_client = FlaskRedis(app)
-
-# redis_client.set('potato',1)
-# print(redis_client.get('potato'))
-# redis_client.delete('potato')
 
 from tracker_app import create_app
 
