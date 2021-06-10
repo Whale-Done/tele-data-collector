@@ -121,7 +121,7 @@ def drop_webhook():
 @app.route('/createall', methods=['GET'])
 def create_db_table():
     db.create_all()
-    return "Created"
+    return "Created entries"
 
 
 if __name__ == '__main__':
