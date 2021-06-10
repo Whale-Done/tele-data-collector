@@ -12,7 +12,7 @@ from tracker_app.main.routes import main
 app = Flask(__name__)
 
 # for deploy
-redis_client = Redis(host="ec2-54-221-249-45.compute-1.amazonaws.com", port=14060, db=0, password='p22272393a04e83e3c4b7cbe21faa98ac3d93cf57e55203ffa43eef0f3a2d5113')
+redis_client = Redis(host="ec2-54-221-249-45.compute-1.amazonaws.com", port=14060, db=0, password='p22272393a04e83e3c4b7cbe21faa98ac3d93cf57e55203ffa43eef0f3a2d5113', ssl=True)
 
 # for local debug
 # redis_client = FlaskRedis(app)
