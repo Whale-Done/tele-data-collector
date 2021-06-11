@@ -1,24 +1,13 @@
-from flask import request, Flask
+from flask import request
 import telegram
-from flask_redis import FlaskRedis
-from flask_sqlalchemy import SQLAlchemy
 
-from tracker_bot.mastermind import mainCommandHandler
+from tracker_bot.mastermind import main_command_handler
 from tracker_bot.credentials import URL, reset_key, bot_token
-
-app = Flask(__name__)
-redis_client = FlaskRedis(app)
-
-from tracker_app import create_app
-
-# https://api.telegram.org/bot1359229669:AAEm8MG26qbA9XjJyojVKvPI7jAdMVqAkc8/getMe
-
-
-bot = telegram.Bot(token=bot_token)
-
-app = create_app()
+from tracker_app import app, db, redis_client
 
 TOKEN = bot_token
+bot = telegram.Bot(token=bot_token)
+
 
 class ExpenseEntry(db.Model):
     __tablename__ = "entries"
@@ -35,13 +24,13 @@ class ExpenseEntry(db.Model):
 
     # def __init__(self, username, amount, category, description, datetime, submit_time, type):
     # def __init__(self):
-        # self.username = username
-        # self.amount = amount
-        # self.category = category
-        # self.description = description
-        # self.datetime = datetime
-        # self.submit_time = submit_time
-        # self.type = type
+    # self.username = username
+    # self.amount = amount
+    # self.category = category
+    # self.description = description
+    # self.datetime = datetime
+    # self.submit_time = submit_time
+    # self.type = type
 
 
 @app.route('/{}'.format(TOKEN), methods=['POST'])
@@ -56,7 +45,8 @@ def respond():
         print("some error has occured internally")
 
     if update.message:
-        state = mainCommandHandler(incoming_message=update.message, telebot_instance=bot, redis_client=redis_client)
+        state = main_command_handler(incoming_message=update.message, telebot_instance=bot, redis_client=redis_client,
+                                   db=db)
         if state is not None:
             username = update.message.from_user['username']
             redis_client.set(username + "state", state)
@@ -64,9 +54,31 @@ def respond():
     return 'ok'
 
 
-# @app.route('/{}'.format(RESETKEY), methods=['POST'])
-# def reset():
-#     return 'ok'
+@app.route('/{}'.format(reset_key), methods=['POST'])
+def reset():
+    return 'ok'
+
+
+@app.route("/test-create", methods=['GET'])
+def test_create():
+    db_entry = ExpenseEntry()
+    db_entry.username = "test"
+    db_entry.amount = "test"
+    db_entry.category = "test"
+    db_entry.datetime = "test"
+    db_entry.description = "test"
+    db_entry.type = "test"
+    db_entry.submit_time = "test"
+
+    db.session.add(db_entry)
+    db.session.commit()
+    return 'created'
+
+
+@app.route("/test-redis", methods=['GET'])
+def test_redis():
+    print(redis_client)
+    return 'redis ok'
 
 
 @app.route('/setwebhook', methods=['GET', 'POST'])
@@ -109,7 +121,7 @@ def drop_webhook():
 @app.route('/createall', methods=['GET'])
 def create_db_table():
     db.create_all()
-    return "Created"
+    return "Created entries"
 
 
 if __name__ == '__main__':
