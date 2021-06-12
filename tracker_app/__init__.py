@@ -4,10 +4,10 @@ from redis import Redis
 
 
 from flask import Flask
-from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
 
-from tracker_app.config import Config
+from appconfig import AppConfig
+from tracker_app.config import DeployConfig, DebugConfig
 from tracker_app.main.routes import main
 
 app = Flask(__name__)
@@ -20,7 +20,11 @@ redis_client = Redis(connection_pool=REDIS_DEFAULT_CONNECTION_POOL)
 # redis_client = FlaskRedis(app)
 db = SQLAlchemy(app)
 
-app.config.from_object(Config)
+# app.config.from_object(Config)
+if AppConfig.debug:
+    app.config.from_object(DebugConfig)
+else:
+    app.config.from_object(DeployConfig)
 
 # import the routes as classes and register these blueprints into the flask app
 

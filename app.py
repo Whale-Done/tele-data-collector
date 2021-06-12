@@ -4,11 +4,20 @@ from flask import request, make_response
 import telegram
 
 from tracker_bot.mastermind import main_command_handler
-from tracker_bot.credentials import URL, reset_key, bot_token
+from tracker_bot.credentials import DEPLOY_URL, reset_key, deploy_bot_token, debug_bot_token, DEBUG_URL
 from tracker_app import app, db, redis_client
+from appconfig import AppConfig
 
-TOKEN = bot_token
-bot = telegram.Bot(token=bot_token)
+debug = AppConfig.debug
+
+if debug:
+    URL = DEBUG_URL
+    TOKEN = debug_bot_token
+    bot = telegram.Bot(token=debug_bot_token)
+else:
+    URL = DEPLOY_URL
+    TOKEN = deploy_bot_token
+    bot = telegram.Bot(token=deploy_bot_token)
 
 
 class ExpenseEntry(db.Model):
@@ -87,7 +96,7 @@ def test_redis():
 def set_webhook():
     # we use the bot object to link the bot to our app which live
     # in the link provided by URL
-    s = bot.setWebhook('{URL}{HOOK}'.format(URL=URL, HOOK=bot_token))
+    s = bot.setWebhook('{URL}{HOOK}'.format(URL=URL, HOOK=TOKEN))
     # something to let us know things work
     if s:
         return "webhook setup ok"
@@ -128,7 +137,7 @@ def create_db_table():
 
 @app.route('/get-entries', methods=['GET'])
 def get_entries():
-    entries = ExpenseEntry.query.order_by(ExpenseEntry.datetime.desc()).all()
+    entries = ExpenseEntry.query.order_by(ExpenseEntry.submit_time.desc()).all()
     expense_detail_list = [{
         'username': entry.username,
         'amount': entry.amount,

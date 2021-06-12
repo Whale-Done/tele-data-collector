@@ -4,7 +4,14 @@ import logging
 
 from datetime import datetime
 from .model import ExpenseEntry
-from .credentials import URL
+from .credentials import DEPLOY_URL, DEBUG_URL
+from appconfig import AppConfig
+
+if AppConfig.debug:
+    URL = DEPLOY_URL
+else:
+    URL = DEBUG_URL
+
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -120,8 +127,7 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             redis_client.set(user['username'], json.dumps(this_entry_obj))
 
             telebot_instance.sendMessage(chat_id=chat_id,
-                                         text=f"""Confirm you entry? You spent {this_entry_obj['amount']} 
-                                                on {this_entry_obj['category']}""",
+                                         text=f"Confirm you entry?\nAmount - {this_entry_obj['amount']}\nCategory - {this_entry_obj['category']}\nDescription - {this_entry_obj['description']}\nPurchase Type - {this_entry_obj['type']} (are you sure?)\nExpense Time - {this_entry_obj['datetime']}",
                                          reply_to_message_id=msg_id, reply_markup=confirm_create_keyboard_markup)
             return "user_finish_input"
 
@@ -187,7 +193,8 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             telebot_instance.sendMessage(chat_id=chat_id, text="Delete the last entry?", reply_to_message_id=msg_id,
                                          reply_markup=delete_keyboard_markup)
         elif text == "my logs":
-            telebot_instance.sendMessage(chat_id=chat_id, text=f"View your logs here {URL}view-data?username={username}",
+            telebot_instance.sendMessage(chat_id=chat_id,
+                                         text=f"View your logs here {URL}view-data?username={username}",
                                          reply_to_message_id=msg_id,
                                          reply_markup=start_keyboard_markup)
         else:
