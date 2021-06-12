@@ -8,9 +8,9 @@ from .credentials import DEPLOY_URL, DEBUG_URL
 from appconfig import AppConfig
 
 if AppConfig.debug:
-    URL = DEPLOY_URL
-else:
     URL = DEBUG_URL
+else:
+    URL = DEPLOY_URL
 
 
 # Enable logging
