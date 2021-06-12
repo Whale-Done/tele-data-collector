@@ -127,7 +127,7 @@ def create_db_table():
 
 
 @app.route('/get-entries', methods=['GET'])
-def create_db_table():
+def get_entries():
     entries = ExpenseEntry.query.order_by(ExpenseEntry.datetime.desc()).all()
     expense_detail_list = [{
         'amount': entry.amount,
