@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-b from-gray-800 via-gray-900 to-black max-w-4xl mx-auto min-h-screen;
+  }
+  header {
+    @apply flex items-center justify-center p-6;
+  }
+  h5 {
+    @apply font-bold font-display text-xl text-white;
+  }
+  h6 {
+    @apply font-display font-bold text-xl text-white;
+  }
+  main {
+    @apply flex flex-col p-6 gap-4;
+  }
+  dl {
+    @apply flex gap-4 p-6 rounded-lg shadow bg-gray-700 bg-opacity-75 justify-between items-center;
+  }
+  dt {
+    @apply font-display font-bold text-white text-lg;
+  }
+  dd {
+    @apply text-gray-100;
+  }
+  button {
+    @apply py-1 px-2 border border-white text-white text-xs rounded-full tracking-wide;
+  }
+}

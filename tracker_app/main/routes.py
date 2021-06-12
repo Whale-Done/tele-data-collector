@@ -39,4 +39,4 @@ def view_data_test():
         'submit_time': 'test',
         'expense_time': 'test',
     }]
-    return render_template('dataview.html', expense_detail_list=expense_detail_list)
+    return render_template('newdataview.html', expense_detail_list=expense_detail_list)

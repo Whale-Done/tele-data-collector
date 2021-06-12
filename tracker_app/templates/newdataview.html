@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Whale Money</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, follow" />
+    {% assets 'css' %}
+    <link rel="stylesheet" href="{{ ASSET_URL }}" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.rawgit.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"
+    />
+    {% endassets %}
+  </head>
+  <body>
+    <header><h5>Whale Money Log</h5></header>
+    <main>
+      {% for entry in expense_detail_list %}
+      <dl>
+        <div class="flex flex-col gap-2">
+          <dt>{{ entry.description }}</dt>
+          <div class="flex gap-2 items-center">
+            <dd>
+              Spent at {{ entry.expense_time }} &middot Submitted {{
+              entry.submit_time }} &middot
+            </dd>
+            <button>{{ entry.category }}</button>
+            <button>{{ entry.purchase_type }}</button>
+          </div>
+        </div>
+        <h6>${{ entry.amount }}</h6>
+      </dl>
+      {% endfor %}
+    </main>
+  </body>
+</html>

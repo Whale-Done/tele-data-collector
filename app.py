@@ -7,6 +7,14 @@ from tracker_bot.mastermind import main_command_handler
 from tracker_bot.credentials import DEPLOY_URL, reset_key, deploy_bot_token, debug_bot_token, DEBUG_URL
 from tracker_app import app, db, redis_client
 from appconfig import AppConfig
+from flask import Flask
+from flask_assets import Environment, Bundle
+
+assets = Environment(app)
+css = Bundle('tailwind.css', output='dist/tailwind.css', filters='postcss',)
+
+assets.register('css', css)
+css.build()
 
 debug = AppConfig.debug
 
