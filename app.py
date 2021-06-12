@@ -48,7 +48,7 @@ def respond():
 
     if update.message:
         state = main_command_handler(incoming_message=update.message, telebot_instance=bot, redis_client=redis_client,
-                                   db=db)
+                                     db=db)
         if state is not None:
             username = update.message.from_user['username']
             redis_client.set(username + "state", state)
@@ -130,6 +130,7 @@ def create_db_table():
 def get_entries():
     entries = ExpenseEntry.query.order_by(ExpenseEntry.datetime.desc()).all()
     expense_detail_list = [{
+        'username': entry.username,
         'amount': entry.amount,
         'category': entry.category,
         'description': entry.description,
