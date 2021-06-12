@@ -1,4 +1,6 @@
-from flask import request
+import json
+
+from flask import request, make_response
 import telegram
 
 from tracker_bot.mastermind import main_command_handler
@@ -122,6 +124,21 @@ def drop_webhook():
 def create_db_table():
     db.create_all()
     return "Created entries"
+
+
+@app.route('/get-entries', methods=['GET'])
+def create_db_table():
+    entries = ExpenseEntry.query.order_by(ExpenseEntry.datetime.desc()).all()
+    expense_detail_list = [{
+        'amount': entry.amount,
+        'category': entry.category,
+        'description': entry.description,
+        'purchase_type': entry.type,
+        'submit_time': entry.submit_time,
+        'expense_time': entry.datetime,
+    }
+        for entry in entries]
+    return make_response(json.dumps(expense_detail_list), 200)
 
 
 if __name__ == '__main__':
