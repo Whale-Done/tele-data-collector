@@ -1,9 +1,10 @@
 import json
-
-import logging
 import telegram
+import logging
+
 from datetime import datetime
 from .model import ExpenseEntry
+from .credentials import URL
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -11,10 +12,11 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-start_keyboard_buttons = [[telegram.KeyboardButton('create expense')], [telegram.KeyboardButton('delete')]]
+start_keyboard_buttons = [[telegram.KeyboardButton('create expense')], [telegram.KeyboardButton('my logs')]]
 start_keyboard_markup = telegram.ReplyKeyboardMarkup(start_keyboard_buttons)
 
-info_keyboard_buttons = [[telegram.KeyboardButton('view my info')], [telegram.KeyboardButton('enter my info')], [telegram.KeyboardButton('home')]]
+info_keyboard_buttons = [[telegram.KeyboardButton('view my info')], [telegram.KeyboardButton('enter my info')],
+                         [telegram.KeyboardButton('home')]]
 info_keyboard_markup = telegram.ReplyKeyboardMarkup(info_keyboard_buttons)
 
 info_input_keyboard_buttons = [[telegram.KeyboardButton('skips')], [telegram.KeyboardButton('home')]]
@@ -55,6 +57,7 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
     chat_id = incoming_message.chat.id
     msg_id = incoming_message.message_id
     user = incoming_message.from_user
+    username = user['username']
 
     text = incoming_message.text.encode('utf-8').decode()
 
@@ -183,8 +186,13 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
         elif text == "delete":
             telebot_instance.sendMessage(chat_id=chat_id, text="Delete the last entry?", reply_to_message_id=msg_id,
                                          reply_markup=delete_keyboard_markup)
+        elif text == "my logs":
+            telebot_instance.sendMessage(chat_id=chat_id, text=f"View your logs here {URL}view-data?username={username}",
+                                         reply_to_message_id=msg_id,
+                                         reply_markup=start_keyboard_markup)
         else:
-            telebot_instance.sendMessage(chat_id=chat_id, text="Whatchu wanna do", reply_to_message_id=msg_id,
+            telebot_instance.sendMessage(chat_id=chat_id, text="Whatchu wanna do, use /start to open up the menu",
+                                         reply_to_message_id=msg_id,
                                          reply_markup=start_keyboard_markup)
 
     try:

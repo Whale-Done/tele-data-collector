@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, make_response
 
 main = Blueprint('main', __name__)
+from ..model import ExpenseEntry, db
 
 
 @main.route("/")
@@ -9,48 +10,21 @@ def home():
     return "Home"
 
 
-@main.route("/viewdata")
+@main.route("/view-data", methods=['GET'])
 def view_data():
-    amount_list = [4.5, 23, 3, 4, 5]
-    expense_detail_list = [
-        {
-            'category': 'food',
-            'description': 'lunch',
-            'purchase_type': 'impulsive, but need?',
-            'expense_time': '2021-06-12 12:00:31',
-            'submit_time': '2021-06-12 12:30:00'
-        },
+    try:
+        username = request.args.get('username')
+    except KeyError:
+        return make_response('Username Error', 404)
 
-        {
-            'category': 'food',
-            'description': 'lunch',
-            'purchase_type': 'impulsive, but need?',
-            'expense_time': '2021-06-12 12:00:31',
-            'submit_time': '2021-06-12 12:30:00'
-        },
-
-        {
-            'category': 'food',
-            'description': 'lunch',
-            'purchase_type': 'impulsive, but need?',
-            'expense_time': '2021-06-12 12:00:31',
-            'submit_time': '2021-06-12 12:30:00'
-        },
-
-        {
-            'category': 'food',
-            'description': 'lunch',
-            'purchase_type': 'impulsive, but need?',
-            'expense_time': '2021-06-12 12:00:31',
-            'submit_time': '2021-06-12 12:30:00'
-        },
-
-        {
-            'category': 'food',
-            'description': 'lunch',
-            'purchase_type': 'impulsive, but need?',
-            'expense_time': '2021-06-12 12:00:31',
-            'submit_time': '2021-06-12 12:30:00'
-        },
-    ]
-    return render_template('dataview.html', amount_list=amount_list, expense_detail_list=expense_detail_list)
+    entries = ExpenseEntry.query.filter(ExpenseEntry.username == username).order_by(ExpenseEntry.datetime.desc()).all()
+    expense_detail_list = [{
+        'amount': entry.amount,
+        'category': entry.category,
+        'description': entry.description,
+        'purchase_type': entry.type,
+        'submit_time': entry.submit_time,
+        'expense_time': entry.datetime,
+    }
+        for entry in entries]
+    return render_template('dataview.html', expense_detail_list=expense_detail_list)

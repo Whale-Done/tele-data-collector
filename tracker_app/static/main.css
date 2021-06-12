@@ -1,6 +1,6 @@
-@font-face{font-family:Roboto-Regular;src:url(../static/fonts/roboto/Roboto-Regular.ttf)}
-@font-face{font-family:Roboto-Medium;src:url(../static/fonts/roboto/Roboto-Medium.ttf)}
-@font-face{font-family:Roboto-Bold;src:url(../static/fonts/roboto/Roboto-Bold.ttf)}*{margin:0;padding:0;box-sizing:border-box}
+@font-face{font-family:Roboto-Regular;src:url(../static/fonts/Roboto-Regular.ttf)}
+@font-face{font-family:Roboto-Medium;src:url(../static/fonts/Roboto-Medium.ttf)}
+@font-face{font-family:Roboto-Bold;src:url(../static/fonts/Roboto-Bold.ttf)}*{margin:0;padding:0;box-sizing:border-box}
 
 body,html{height:100%;font-family:sans-serif}
 

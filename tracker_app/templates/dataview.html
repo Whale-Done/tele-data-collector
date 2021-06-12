@@ -35,9 +35,9 @@
 								</tr>
 							</thead>
 							<tbody>
-							{% for amount in amount_list %}
+							{% for entry in expense_detail_list %}
 								<tr class="row100 body">
-									<td class="cell100 column1">{{ amount }}</td>
+									<td class="cell100 column1">{{ entry.amount }}</td>
 								</tr>
 							{% endfor %}
 							</tbody>
