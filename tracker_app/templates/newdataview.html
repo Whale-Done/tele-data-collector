@@ -2,17 +2,24 @@
 <html lang="en">
   <head>
     <title>Whale Money</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, follow" />
-    {% assets 'css' %}
-    <link rel="stylesheet" href="{{ ASSET_URL }}" />
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.rawgit.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"
-    />
-    {% endassets %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--===============================================================================================-->
+    <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+  <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.css')}}">
+  <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='fontawesome.css')}}">
+  <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='animate.css')}}">
+  <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='select2.css')}}">
+  <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='scroll.css')}}">
+  <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='util.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css')}}">
+  <!--===============================================================================================-->
   </head>
   <body>
     <header><h5>Whale Money Log</h5></header>

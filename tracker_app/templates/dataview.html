@@ -1,125 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<title>Whale Money</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-<!--===============================================================================================-->
-	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
-<!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.css')}}">
-<!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='fontawesome.css')}}">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='animate.css')}}">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='select2.css')}}">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='scroll.css')}}">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='util.css')}}">
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css')}}">
-<!--===============================================================================================-->
-<meta name="robots" content="noindex, follow">
+	<meta name="robots" content="noindex, follow">
 </head>
+
 <body>
-	<div class="limiter">
-		<div class="container-table100">
-			<div class="wrap-table100">
-				<div class="table100 ver1">
-					<div class="table100-firstcol">
-						<table>
-							<thead>
-								<tr class="row100 head">
-									<th class="cell100 column1">Entry Amount</th>
-								</tr>
-							</thead>
-							<tbody>
-							{% for entry in expense_detail_list %}
-								<tr class="row100 body">
-									<td class="cell100 column1">{{ entry.amount }}</td>
-								</tr>
-							{% endfor %}
-							</tbody>
-						</table>
-					</div>
 
-					<div class="wrap-table100-nextcols js-pscroll">
-						<div class="table100-nextcols">
-							<table>
-								<thead>
-									<tr class="row100 head">
-										<th class="cell100 column2">Category</th>
-										<th class="cell100 column3">Description</th>
-										<th class="cell100 column5">Purchase Type</th>
-										<th class="cell100 column4">Expense Time</th>
-										<th class="cell100 column6">Submit Time</th>
-									</tr>
-								</thead>
-								<tbody>
-								{% for entry in expense_detail_list %}
-									<tr class="row100 body">
-										<td class="cell100 column2">{{ entry.category }}</td>
-										<td class="cell100 column3">{{ entry.description }}</td>
-										<td class="cell100 column4">{{ entry.purchase_type }}</td>
-										<td class="cell100 column5">{{ entry.expense_time }}</td>
-										<td class="cell100 column6">{{ entry.submit_time }}</td>
-									</tr>
-								{% endfor %}
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-
-<!--===============================================================================================-->
-	<script src="{{ url_for('static', filename='js/jquery.js')}}"></script>
-<!--===============================================================================================-->
-	<script src="{{ url_for('static', filename='js/popper.js')}}"></script>
-	<script src="{{ url_for('static', filename='js/bootstrap.js')}}"></script>
-<!--===============================================================================================-->
-	<script src="{{ url_for('static', filename='js/select2.js')}}"></script>
-<!--===============================================================================================-->
-	<script src="{{ url_for('static', filename='js/scroll.js')}}"></script>
-	<script>
-		$('.js-pscroll').each(function(){
-			var ps = new PerfectScrollbar(this);
-
-			$(window).on('resize', function(){
-				ps.update();
-			})
-
-			$(this).on('ps-x-reach-start', function(){
-				$(this).parent().find('.table100-firstcol').removeClass('shadow-table100-firstcol');
-			});
-
-			$(this).on('ps-scroll-x', function(){
-				$(this).parent().find('.table100-firstcol').addClass('shadow-table100-firstcol');
-			});
-
-		});
-
-
-
-
-	</script>
-	<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-23581568-13"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-23581568-13');
-</script>
-
-<!--===============================================================================================-->
-	<script src="js/main.js"></script>
-
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"rayId":"65d7f931bcf5d9a8","token":"cd0b4b3a733644fc843ef0b185f98241","version":"2021.5.2","si":10}'></script>
+	<table class="rtable">
+		<thead>
+			<tr>
+				<th>Amount</th>
+				<th>Category</th>
+				<th>Description</td>
+				<th>Purchase Type</th>
+				<th>Expense Time</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for entry in expense_detail_list %}
+			<tr>
+				<td>{{ entry.amount }}</td>
+				<td>{{ entry.category }}</td>
+				<td>{{ entry.description }}</td>
+				<td>{{ entry.purchase_type }}</td>
+				<td>{{ entry.expense_time }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
 </body>
+
 </html>
