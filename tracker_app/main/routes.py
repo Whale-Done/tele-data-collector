@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, request, make_response
-
 main = Blueprint('main', __name__)
 from ..model import ExpenseEntry, db
 

@@ -8,6 +8,7 @@ from tracker_bot.credentials import DEPLOY_URL, reset_key, deploy_bot_token, deb
 from tracker_app import app, db, redis_client
 from appconfig import AppConfig
 from flask import Flask
+
 # from flask_assets import Environment, Bundle
 
 # assets = Environment(app)
@@ -15,6 +16,13 @@ from flask import Flask
 
 # assets.register('css', css)
 # css.build()
+
+
+my_logs_keyboard_buttons = [[telegram.KeyboardButton('list view')],
+                            [telegram.KeyboardButton('spending stats')],
+                                   [telegram.KeyboardButton('back to home')]]
+my_logs_keyboard_markup = telegram.ReplyKeyboardMarkup(my_logs_keyboard_buttons)
+
 
 debug = AppConfig.debug
 
@@ -68,7 +76,27 @@ def respond():
                                      db=db)
         if state is not None:
             username = update.message.from_user['username']
-            redis_client.set(username + "state", state)
+            chat_id = update.message.chat.id
+            msg_id = update.message.message_id
+            if state == "user_query_stats":
+                rs = db.engine.execute(f'''
+                    SELECT COUNT(*) as count, type FROM entries
+                    WHERE
+                        username='{username}'
+                    GROUP BY
+                        type
+                    ''')
+
+                replyList = ""
+
+                for entry in rs:
+                    replyList += f"{entry.type} ||| count: {entry.count}\n"
+
+                bot.sendMessage(chat_id=chat_id, text=f"Your stats -\n{replyList}",
+                                         reply_to_message_id=msg_id, reply_markup=my_logs_keyboard_markup)
+                redis_client.set(username + "state", "user_query_logs")
+            else:
+                redis_client.set(username + "state", state)
 
     return 'ok'
 

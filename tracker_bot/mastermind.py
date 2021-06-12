@@ -1,6 +1,7 @@
 import json
 import telegram
 import logging
+import pytz
 
 from datetime import datetime
 from .model import ExpenseEntry
@@ -11,6 +12,9 @@ if AppConfig.debug:
     URL = DEBUG_URL
 else:
     URL = DEPLOY_URL
+
+singapore=pytz.timezone('Asia/Singapore')
+gmt=pytz.timezone('Etc/GMT')
 
 
 # Enable logging
@@ -58,6 +62,12 @@ confirm_create_keyboard_buttons = [[telegram.KeyboardButton('confirm create')],
                                    [telegram.KeyboardButton('cancel create')]]
 confirm_create_keyboard_markup = telegram.ReplyKeyboardMarkup(confirm_create_keyboard_buttons)
 
+my_logs_keyboard_buttons = [[telegram.KeyboardButton('list view')],
+                            [telegram.KeyboardButton('spending stats')],
+                                   [telegram.KeyboardButton('back to home')]]
+my_logs_keyboard_markup = telegram.ReplyKeyboardMarkup(my_logs_keyboard_buttons)
+
+kuala_lumpur=pytz.timezone('Asia/Kuala_Lumpur')
 
 def main_command_handler(incoming_message, telebot_instance, redis_client, db):
     """Echo the user message."""
@@ -93,7 +103,8 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
                                          reply_to_message_id=msg_id, reply_markup=category_keyboard_markup)
             this_entry_obj = json.loads(redis_client.get(user['username']))
             if text == "Now (Or recent)":
-                dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                now = datetime.now()
+                dt_string = now.astimezone(singapore).strftime("%d/%m/%Y %H:%M:%S")
                 this_entry_obj['datetime'] = dt_string
             else:
                 this_entry_obj['datetime'] = text
@@ -102,7 +113,7 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             return "user_enter_category"
 
         elif state == "user_enter_category":
-            telebot_instance.sendMessage(chat_id=chat_id, text="What item/service did you purchase?",
+            telebot_instance.sendMessage(chat_id=chat_id, text="What item/serice did you purchase?",
                                          reply_to_message_id=msg_id, reply_markup=item_name_keyboard_markup)
 
             this_entry_obj = json.loads(redis_client.get(user['username']))
@@ -169,6 +180,17 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
         elif state == "user_enter_info_occupation":
             return
 
+        elif state == "user_query_logs":
+            if text == "list view":
+                telebot_instance.sendMessage(chat_id=chat_id, text=f"Your expense list - {URL}view-data?username={username}",
+                                    reply_to_message_id=msg_id, reply_markup=my_logs_keyboard_markup)
+            elif text == "spending stats":
+                return "user_query_stats"
+            else:
+                telebot_instance.sendMessage(chat_id=chat_id, text=f"View your expense here",
+                    reply_to_message_id=msg_id, reply_markup=my_logs_keyboard_markup)
+            return "user_query_logs"
+
     # no state
     else:
         if text == "/start" or text == "cancel delete" or text == "cancel create" or text == "back to home":
@@ -194,9 +216,10 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
                                          reply_markup=delete_keyboard_markup)
         elif text == "my logs":
             telebot_instance.sendMessage(chat_id=chat_id,
-                                         text=f"View your logs here {URL}view-data?username={username}",
+                                         text=f"View your spending records here",
                                          reply_to_message_id=msg_id,
-                                         reply_markup=start_keyboard_markup)
+                                         reply_markup=my_logs_keyboard_markup)
+            return "user_query_logs"
         else:
             telebot_instance.sendMessage(chat_id=chat_id, text="Whatchu wanna do, use /start to open up the menu",
                                          reply_to_message_id=msg_id,
