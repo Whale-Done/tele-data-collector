@@ -41,21 +41,22 @@ amount_keyboard_buttons = [[telegram.KeyboardButton('less than 1')], [telegram.K
                            [telegram.KeyboardButton('cancel create')]]
 amount_keyboard_markup = telegram.ReplyKeyboardMarkup(amount_keyboard_buttons)
 
-category_keyboard_buttons = [[telegram.KeyboardButton('food')], [telegram.KeyboardButton('drinks')],
+category_keyboard_buttons = [[telegram.KeyboardButton('food (a meal)'), telegram.KeyboardButton('food (for happiness!)')],
+                            [telegram.KeyboardButton('groceries'), telegram.KeyboardButton('transportation')],
+                            [telegram.KeyboardButton('shopping'), telegram.KeyboardButton('hobbies')],
                              [telegram.KeyboardButton('cancel create')]]
 category_keyboard_markup = telegram.ReplyKeyboardMarkup(category_keyboard_buttons)
 
-date_keyboard_buttons = [[telegram.KeyboardButton('Now (Or recent)')], [telegram.KeyboardButton('cancel create')]]
+date_keyboard_buttons = [[telegram.KeyboardButton('Now (Or recent)'), telegram.KeyboardButton('Today morning')], [telegram.KeyboardButton('Today noon'), telegram.KeyboardButton('Today evening')], [telegram.KeyboardButton('cancel create')]]
 date_keyboard_markup = telegram.ReplyKeyboardMarkup(date_keyboard_buttons)
 
 item_name_keyboard_buttons = [[telegram.KeyboardButton('None (Leave blank)')],
                               [telegram.KeyboardButton('cancel create')]]
 item_name_keyboard_markup = telegram.ReplyKeyboardMarkup(item_name_keyboard_buttons)
 
-purchase_type_keyboard_buttons = [[telegram.KeyboardButton('Impulse buy')],
-                                  [telegram.KeyboardButton("""It's a need!""")],
-                                  [telegram.KeyboardButton('Planned purchase')],
-                                  [telegram.KeyboardButton('cancel create')]]
+purchase_type_keyboard_buttons = [[telegram.KeyboardButton('1'),telegram.KeyboardButton('2')],
+                                [telegram.KeyboardButton('3'),telegram.KeyboardButton('4')],
+                                [telegram.KeyboardButton('5'),telegram.KeyboardButton('cancel create')]]
 purchase_type_keyboard_markup = telegram.ReplyKeyboardMarkup(purchase_type_keyboard_buttons)
 
 confirm_create_keyboard_buttons = [[telegram.KeyboardButton('confirm create')],
@@ -80,7 +81,7 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
 
     # check if current user has state
     if redis_client.get(user['username'] + "state") is not None:
-        if text == "cancel delete" or text == "cancel create" or text == "back to home":
+        if text == "cancel delete" or text == "cancel create" or text == "back to home" or text == "/home":
             redis_client.delete(user['username'] + "state")
             telebot_instance.sendMessage(chat_id=chat_id, text="What would you like to do",
                                          reply_to_message_id=msg_id, reply_markup=start_keyboard_markup)
@@ -102,19 +103,29 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             telebot_instance.sendMessage(chat_id=chat_id, text="enter the category of your expense",
                                          reply_to_message_id=msg_id, reply_markup=category_keyboard_markup)
             this_entry_obj = json.loads(redis_client.get(user['username']))
+            now = datetime.now()
             if text == "Now (Or recent)":
-                now = datetime.now()
                 dt_string = now.astimezone(singapore).strftime("%d/%m/%Y %H:%M:%S")
-                this_entry_obj['datetime'] = dt_string
+            elif text == "today morning":
+                today_morning = datetime(now.year, now.month, now.date, 9,0,0)
+                dt_string = today_morning.astimezone(singapore).strftime("%d/%m/%Y %H:%M:%S")
+            elif text == "today noon":
+                today_noon = datetime(now.year, now.month, now.date, 12,0,0)
+                dt_string = today_noon.astimezone(singapore).strftime("%d/%m/%Y %H:%M:%S")
+            elif text == "today evening":
+                today_evening = datetime(now.year, now.month, now.date, 21,0,0)
+                dt_string = today_evening.astimezone(singapore).strftime("%d/%m/%Y %H:%M:%S")
             else:
-                this_entry_obj['datetime'] = text
+                dt_string = text
+
+            this_entry_obj['datetime'] = dt_string
             redis_client.set(user['username'], json.dumps(this_entry_obj))
 
             return "user_enter_category"
 
         elif state == "user_enter_category":
-            telebot_instance.sendMessage(chat_id=chat_id, text="What item/serice did you purchase?",
-                                         reply_to_message_id=msg_id, reply_markup=item_name_keyboard_markup)
+            telebot_instance.sendMessage(chat_id=chat_id, text="What item/service did you purchase? \n\nUse /home to go back",
+                                         reply_to_message_id=msg_id, reply_markup=telegram.ReplyKeyboardRemove(remove_keyboard=True))
 
             this_entry_obj = json.loads(redis_client.get(user['username']))
             this_entry_obj['category'] = text
@@ -122,8 +133,21 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
 
             return "user_enter_name"
 
+        # original
+        # elif state == "user_enter_name":
+        #     telebot_instance.sendMessage(chat_id=chat_id, text="Classify your expense",
+        #                                  reply_to_message_id=msg_id, reply_markup=purchase_type_keyboard_markup)
+
+        #     this_entry_obj = json.loads(redis_client.get(user['username']))
+        #     this_entry_obj['description'] = text
+        #     redis_client.set(user['username'], json.dumps(this_entry_obj))
+
+        #     return "user_enter_type"
+        # 
+
+
         elif state == "user_enter_name":
-            telebot_instance.sendMessage(chat_id=chat_id, text="Classify your expense",
+            telebot_instance.sendMessage(chat_id=chat_id, text="On a scale from \n1 (It's a want, I can still be happy without it) to \n5 (My life can't function without it). \nHow would you classify your expense?",
                                          reply_to_message_id=msg_id, reply_markup=purchase_type_keyboard_markup)
 
             this_entry_obj = json.loads(redis_client.get(user['username']))
@@ -153,6 +177,8 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             db_entry.description = this_entry_obj['description']
             db_entry.type = this_entry_obj['type']
             db_entry.submit_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            entries = ExpenseEntry.query.filter(ExpenseEntry.username == username).order_by(ExpenseEntry.datetime.desc()).all()
+            current_count = len(entries)
 
             try:
                 db.session.add(db_entry)
@@ -160,7 +186,13 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             except Exception as e:
                 print(f"exception {e}")
 
-            telebot_instance.sendMessage(chat_id=chat_id, text="Creation Success! Thank you for logging",
+            # target count here
+            if current_count < 25:
+                message = f"Creation success! \n\nWith {25 - current_count} more entries, we will be able to give you an overview of your spending habits!"
+            else:
+                message = f"Creation success! \nYou have logged in {current_count}, we will be analysing your latest 25 entries to generate an overview of your spending habits!"
+
+            telebot_instance.sendMessage(chat_id=chat_id, text=message,
                                          reply_to_message_id=msg_id, reply_markup=start_keyboard_markup)
 
             redis_client.delete(user['username'] + "state")
@@ -197,9 +229,12 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             telebot_instance.sendMessage(chat_id=chat_id, text="What would you like to do",
                                          reply_to_message_id=msg_id, reply_markup=start_keyboard_markup)
         elif text == "create expense":
+            # 220 get most recent 5 spending
+            entries = ExpenseEntry.query.filter(ExpenseEntry.username == username).order_by(ExpenseEntry.datetime.desc()).limit(3)
+            
             telebot_instance.sendMessage(chat_id=chat_id,
-                                         text="To create an entry, enter the amount you have spent (Use the buttons or enter yourself)",
-                                         reply_to_message_id=msg_id, reply_markup=amount_keyboard_markup)
+                                         text="How much did you spend? \n\nyou can use /home to go back ",
+                                         reply_to_message_id=msg_id, reply_markup=telegram.ReplyKeyboardRemove(remove_keyboard=True))
             return "user_enter_amount"
         elif text == "view my info":
             telebot_instance.sendMessage(chat_id=chat_id,

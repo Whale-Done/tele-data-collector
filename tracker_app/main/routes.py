@@ -15,7 +15,6 @@ def view_data():
         username = request.args.get('username')
     except KeyError:
         return make_response('Username Error', 404)
-
     entries = ExpenseEntry.query.filter(ExpenseEntry.username == username).order_by(ExpenseEntry.datetime.desc()).all()
     expense_detail_list = [{
         'amount': entry.amount,

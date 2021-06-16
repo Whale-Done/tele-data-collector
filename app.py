@@ -8,6 +8,8 @@ from tracker_bot.credentials import DEPLOY_URL, reset_key, deploy_bot_token, deb
 from tracker_app import app, db, redis_client
 from appconfig import AppConfig
 from flask import Flask
+from threading import Thread
+from time import sleep
 
 # from flask_assets import Environment, Bundle
 
@@ -72,6 +74,18 @@ def respond():
         print("some error has occured internally")
 
     if update.message:
+        chat_id = update.message.chat.id
+        
+        # keep track of chat_id for notification
+        if redis_client.get("chatids") is not None:
+            current_subscription = json.loads(redis_client.get("chatids"))
+            if chat_id not in current_subscription:
+                current_subscription.append(chat_id)
+        else:
+            current_subscription = [chat_id]
+
+        redis_client.set("chatids", json.dumps(current_subscription))
+
         state = main_command_handler(incoming_message=update.message, telebot_instance=bot, redis_client=redis_client,
                                      db=db)
         if state is not None:
@@ -89,11 +103,35 @@ def respond():
 
                 replyList = ""
 
+                # Diagnostic feature
+                TARGET_COUNT = 25
+                entries = ExpenseEntry.query.filter(ExpenseEntry.username == username).order_by(ExpenseEntry.datetime.desc()).all()
+                expense_detail_list = [{
+                    'amount': entry.amount,
+                    'category': entry.category,
+                    'description': entry.description,
+                    'purchase_type': entry.type,
+                    'submit_time': entry.submit_time,
+                    'expense_time': entry.datetime,
+                }
+                    for entry in entries]
+
+                current_count = len(expense_detail_list)
+                
                 for entry in rs:
                     replyList += f"{entry.type} ||| count: {entry.count}\n"
 
-                bot.sendMessage(chat_id=chat_id, text=f"Your stats -\n{replyList}",
-                                         reply_to_message_id=msg_id, reply_markup=my_logs_keyboard_markup)
+                # if target count not met, send this
+                if current_count <= TARGET_COUNT:
+                    required_count = TARGET_COUNT - current_count
+
+                    bot.sendMessage(chat_id=chat_id, text=f"Let's see... \n\nwe still need {required_count} more entries to give you a more accurate report. \n\nBut your current stats are -\n{replyList}",
+                                            reply_to_message_id=msg_id, reply_markup=my_logs_keyboard_markup)
+                else:        
+                    # target count is met, send a more detailed report
+                    bot.sendMessage(chat_id=chat_id, text=f"Your stats -\n{replyList}",
+                                            reply_to_message_id=msg_id, reply_markup=my_logs_keyboard_markup)
+                                            
                 redis_client.set(username + "state", "user_query_logs")
             else:
                 redis_client.set(username + "state", state)
@@ -186,6 +224,29 @@ def get_entries():
         for entry in entries]
     return make_response(json.dumps(expense_detail_list), 200)
 
+@app.route('/notifyall', methods=['GET'])
+def notify_all():
+    if redis_client.get("chatids") is not None:
+        list_of_chats = json.loads(redis_client.get("chatids"))
+
+        for id in list_of_chats: 
+            bot.send_message(id, "Hello! This is Whale calling for you to record your expense 🐳 \n\nHave a good one! 🤩")
+
+    return make_response("Notified", 200)
+
+@app.route('/clear_noti_targets', methods=['GET'])
+def delete_targets():
+    redis_client.delete("chatids")
+
+    return make_response("Notified", 200)
+
+# def schedule_checker():
+#     while True:
+#         schedule.run_pending()
+#         sleep(1)
+
+# def function_to_run():
+#     return bot.send_message(some_id, "This is a message to send.")
 
 if __name__ == '__main__':
     # note the threaded arg which allow
