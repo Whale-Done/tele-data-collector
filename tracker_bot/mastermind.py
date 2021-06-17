@@ -4,7 +4,7 @@ import logging
 import pytz
 
 from datetime import datetime
-from .model import ExpenseEntry
+from .model import ExpenseEntry, UserAction
 from .credentials import DEPLOY_URL, DEBUG_URL
 from appconfig import AppConfig
 
@@ -180,6 +180,13 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             entries = ExpenseEntry.query.filter(ExpenseEntry.username == username).order_by(ExpenseEntry.datetime.desc()).all()
             current_count = len(entries)
 
+            action = UserAction()
+            action.username = username
+            action.chat_id = chat_id
+            action.input = text
+            db.session.add(action)
+            db.session.commit()
+
             try:
                 db.session.add(db_entry)
                 db.session.commit()
@@ -187,10 +194,10 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
                 print(f"exception {e}")
 
             # target count here
-            if current_count < 25:
-                message = f"Creation success! \n\nWith {25 - current_count} more entries, we will be able to give you an overview of your spending habits!"
+            if current_count < 30:
+                message = f"Creation success! \n\nWith {30 - current_count} more entries, we will be able to give you an overview of your spending habits!"
             else:
-                message = f"Creation success! \nYou have logged in {current_count}, we will be analysing your latest 25 entries to generate an overview of your spending habits!"
+                message = f"Creation success! \nYou have logged in {current_count}, we will be analysing your latest 30 entries to generate an overview of your spending habits!"
 
             telebot_instance.sendMessage(chat_id=chat_id, text=message,
                                          reply_to_message_id=msg_id, reply_markup=start_keyboard_markup)
@@ -250,6 +257,14 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             telebot_instance.sendMessage(chat_id=chat_id, text="Delete the last entry?", reply_to_message_id=msg_id,
                                          reply_markup=delete_keyboard_markup)
         elif text == "my logs":
+
+            action = UserAction()
+            action.username = username
+            action.chat_id = chat_id
+            action.input = text
+            db.session.add(action)
+            db.session.commit()
+
             telebot_instance.sendMessage(chat_id=chat_id,
                                          text=f"View your spending records here",
                                          reply_to_message_id=msg_id,

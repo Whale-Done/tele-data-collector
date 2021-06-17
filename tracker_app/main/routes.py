@@ -41,11 +41,3 @@ def view_data_test():
     }]
     return render_template('dataview.html', expense_detail_list=expense_detail_list)
 
-@main.route("/insert-expense-data", methods=['POST'])
-def insert_data():
-
-    data_list = json.loads(request.data)
-
-    insert_list = [entry for entry in data_list]
-
-    return make_response("Insert ok", 200)
