@@ -14,11 +14,6 @@ class ExpenseEntry(db.Model):
     submit_time = db.Column(db.String(128))
     type = db.Column(db.String(128))
 
-
-class UserAction(db.Model):
-    __tablename__ = "user_actions"
-    __table_args__ = {'extend_existing': True}
-
 class UserAction(db.Model):
     __tablename__ = "user_actions"
     __table_args__ = {'extend_existing': True}

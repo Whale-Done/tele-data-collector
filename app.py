@@ -3,9 +3,9 @@ import json
 from flask import request, make_response
 import telegram
 
+from tracker_app import app, db, redis_client
 from tracker_bot.mastermind import main_command_handler
 from tracker_bot.credentials import DEPLOY_URL, reset_key, deploy_bot_token, debug_bot_token, DEBUG_URL
-from tracker_app import app, db, redis_client
 from appconfig import AppConfig
 from flask import Flask
 from threading import Thread
@@ -60,7 +60,7 @@ class UserAction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(128))
     chat_id = db.Column(db.String(128))
-    datetime = db.Column(db.String(128))
+    submit_time = db.Column(db.String(128))
     input = db.Column(db.String(128))
 
 @app.route('/{}'.format(TOKEN), methods=['POST'])

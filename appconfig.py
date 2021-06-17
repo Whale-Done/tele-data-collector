@@ -1,2 +1,2 @@
 class AppConfig:
-    debug = False
+    debug = True
