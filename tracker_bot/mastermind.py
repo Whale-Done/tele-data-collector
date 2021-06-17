@@ -108,13 +108,13 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
                 dt_string = now.astimezone(singapore).strftime("%d/%m/%Y %H:%M:%S")
             elif text == "Today morning":
                 today_morning = datetime(now.year, now.month, now.day, 9,0,0)
-                dt_string = today_morning.astimezone(singapore).strftime("%d/%m/%Y %H:%M:%S")
+                dt_string = today_morning.strftime("%d/%m/%Y %H:%M:%S")
             elif text == "Today noon":
                 today_noon = datetime(now.year, now.month, now.day, 12,0,0)
-                dt_string = today_noon.astimezone(singapore).strftime("%d/%m/%Y %H:%M:%S")
+                dt_string = today_noon.strftime("%d/%m/%Y %H:%M:%S")
             elif text == "Today evening":
                 today_evening = datetime(now.year, now.month, now.day, 21,0,0)
-                dt_string = today_evening.astimezone(singapore).strftime("%d/%m/%Y %H:%M:%S")
+                dt_string = today_evening.strftime("%d/%m/%Y %H:%M:%S")
             else:
                 dt_string = text
 
