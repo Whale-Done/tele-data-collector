@@ -251,6 +251,7 @@ def get_action_logs():
     action_list = [{
         'username': entry.username,
         'chat_id': entry.chat_id,
+        'datetime' : entry.datetime,
         'input': entry.input,
     }
         for entry in entries]
