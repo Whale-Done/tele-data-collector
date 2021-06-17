@@ -176,7 +176,7 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             db_entry.datetime = this_entry_obj['datetime']
             db_entry.description = this_entry_obj['description']
             db_entry.type = this_entry_obj['type']
-            db_entry.submit_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            db_entry.submit_time = datetime.now().astimezone(singapore).strftime("%d/%m/%Y %H:%M:%S")
             entries = ExpenseEntry.query.filter(ExpenseEntry.username == username).order_by(ExpenseEntry.datetime.desc()).all()
             current_count = len(entries)
 
@@ -184,7 +184,7 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             action.username = username
             action.chat_id = chat_id
             action.input = text
-            action.datetime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            action.datetime = datetime.now().astimezone(singapore).strftime("%d/%m/%Y %H:%M:%S")
             db.session.add(action)
             db.session.commit()
 
@@ -263,7 +263,7 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             action.username = username
             action.chat_id = chat_id
             action.input = text
-            action.datetime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            action.datetime = datetime.now().astimezone(singapore).strftime("%d/%m/%Y %H:%M:%S")
             db.session.add(action)
             db.session.commit()
 
