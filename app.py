@@ -132,7 +132,7 @@ def respond():
                     except:
                         has_error = True
 
-                if not has_error:
+                if not has_error and current_count != 0:
                     avg_score = sum / current_count
                     replyList += f"""\n Your average Want Need Score is \n⭐️ {avg_score} ⭐️"""
 
