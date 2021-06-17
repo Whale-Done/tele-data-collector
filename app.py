@@ -245,7 +245,7 @@ def get_entries():
 
 
 @app.route('/get-action-logs', methods=['GET'])
-def get_entries():
+def get_action_logs():
     entries = UserAction.query.all()
     action_list = [{
         'username': entry.username,
