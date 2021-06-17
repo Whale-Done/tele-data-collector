@@ -130,7 +130,7 @@ def respond():
                     try: 
                         sum += int(entry["type"]) * int(entry["count"])      
                     except:
-                        has_error
+                        has_error = True
 
                 if not has_error:
                     avg_score = sum / current_count
@@ -241,6 +241,19 @@ def get_entries():
     }
         for entry in entries]
     return make_response(json.dumps(expense_detail_list), 200)
+
+
+
+@app.route('/get-action-logs', methods=['GET'])
+def get_entries():
+    entries = UserAction.query.all()
+    action_list = [{
+        'username': entry.username,
+        'chat_id': entry.chat_id,
+        'input': entry.input,
+    }
+        for entry in entries]
+    return make_response(json.dumps(action_list), 200)
 
 
 @app.route("/insert-expense-data", methods=['GET'])
