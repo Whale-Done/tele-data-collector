@@ -41,9 +41,9 @@ amount_keyboard_buttons = [[telegram.KeyboardButton('less than 1')], [telegram.K
                            [telegram.KeyboardButton('cancel create')]]
 amount_keyboard_markup = telegram.ReplyKeyboardMarkup(amount_keyboard_buttons)
 
-category_keyboard_buttons = [[telegram.KeyboardButton('food (a meal)'), telegram.KeyboardButton('food (for happiness!)')],
-                            [telegram.KeyboardButton('groceries'), telegram.KeyboardButton('transportation')],
-                            [telegram.KeyboardButton('shopping'), telegram.KeyboardButton('hobbies')],
+category_keyboard_buttons = [[telegram.KeyboardButton('food'), telegram.KeyboardButton('drinks')],
+                            [telegram.KeyboardButton('snacks'), telegram.KeyboardButton('transportation')],
+                            [telegram.KeyboardButton('hobbies'), telegram.KeyboardButton('subscription/top up')],
                              [telegram.KeyboardButton('cancel create')]]
 category_keyboard_markup = telegram.ReplyKeyboardMarkup(category_keyboard_buttons)
 
@@ -54,9 +54,9 @@ item_name_keyboard_buttons = [[telegram.KeyboardButton('None (Leave blank)')],
                               [telegram.KeyboardButton('cancel create')]]
 item_name_keyboard_markup = telegram.ReplyKeyboardMarkup(item_name_keyboard_buttons)
 
-purchase_type_keyboard_buttons = [[telegram.KeyboardButton('1'),telegram.KeyboardButton('2')],
+purchase_type_keyboard_buttons = [[telegram.KeyboardButton('1 (Pure Want)'),telegram.KeyboardButton('2')],
                                 [telegram.KeyboardButton('3'),telegram.KeyboardButton('4')],
-                                [telegram.KeyboardButton('5'),telegram.KeyboardButton('cancel create')]]
+                                [telegram.KeyboardButton('5 (Real need!)'),telegram.KeyboardButton('cancel create')]]
 purchase_type_keyboard_markup = telegram.ReplyKeyboardMarkup(purchase_type_keyboard_buttons)
 
 confirm_create_keyboard_buttons = [[telegram.KeyboardButton('confirm create')],
