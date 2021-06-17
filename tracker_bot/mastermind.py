@@ -184,6 +184,7 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             action.username = username
             action.chat_id = chat_id
             action.input = text
+            action.submit_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             db.session.add(action)
             db.session.commit()
 
@@ -262,6 +263,7 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             action.username = username
             action.chat_id = chat_id
             action.input = text
+            action.submit_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             db.session.add(action)
             db.session.commit()
 

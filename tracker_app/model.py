@@ -22,4 +22,5 @@ class UserAction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(128))
     chat_id = db.Column(db.String(128))
+    submit_time = db.Column(db.String(128))
     input = db.Column(db.String(128))
