@@ -295,8 +295,8 @@ def insert_data():
         entry.category = row.category
         entry.description = row.description
         entry.type = row.purchase_type
-        entry.submit_time = datetime.strptime(row.submit_time, "%d/%m/%Y %H:%M:%S")
-        entry.datetime = datetime.strptime(row.expense_time, "%d/%m/%Y %H:%M:%S")
+        entry.submit_time = datetime.strptime(row.submit_time, "%Y-%m-%d %H:%M:%S")
+        entry.datetime = datetime.strptime(row.expense_time, "%Y-%m-%d %H:%M:%S")
         insert_rows.append(entry)
 
     ExpenseEntry.query.delete()

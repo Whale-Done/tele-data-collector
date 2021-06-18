@@ -162,7 +162,16 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
 
         elif state == "user_enter_type":
             this_entry_obj = json.loads(redis_client.get(user['username']))
-            this_entry_obj['type'] = text
+            if text == "":
+                this_entry_obj['type'] = 1
+            elif text == "":
+                this_entry_obj['type'] = 2
+            elif text == "":
+                this_entry_obj['type'] = 3
+            elif text == "":
+                this_entry_obj['type'] = 4
+            elif text == "":
+                this_entry_obj['type'] = 5
             redis_client.set(user['username'], json.dumps(this_entry_obj))
 
             telebot_instance.sendMessage(chat_id=chat_id,
