@@ -319,13 +319,13 @@ def notify_all():
 
 
 @app.route('/notifyerror', methods=['GET'])
-def notify_all():
+def notify_error():
     if redis_client.get("chatids") is not None:
         list_of_chats = json.loads(redis_client.get("chatids"))
 
         for id in list_of_chats:
             bot.send_message(id,
-                             "Hello! This is Whale calling for you to record your expense 🐳 \n\nHave a good one! 🤩")
+                             "Hello! Whale had some issue previously and is back up 🐳")
 
     return make_response("Notified", 200)
 
