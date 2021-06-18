@@ -29,6 +29,7 @@ def view_data():
         for entry in entries]
     return render_template('dataview.html', expense_detail_list=expense_detail_list)
 
+
 @main.route("/view-data-test", methods=['GET'])
 def view_data_test():
     expense_detail_list = [{
@@ -40,6 +41,7 @@ def view_data_test():
         'expense_time': 'test',
     }]
     return render_template('dataview.html', expense_detail_list=expense_detail_list)
+
 
 @main.route("/insert-expense-data", methods=['POST'])
 def insert_data():

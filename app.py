@@ -224,6 +224,7 @@ def get_entries():
         for entry in entries]
     return make_response(json.dumps(expense_detail_list), 200)
 
+
 @app.route('/notifyall', methods=['GET'])
 def notify_all():
     if redis_client.get("chatids") is not None:
@@ -233,6 +234,7 @@ def notify_all():
             bot.send_message(id, "Hello! This is Whale calling for you to record your expense 🐳 \n\nHave a good one! 🤩")
 
     return make_response("Notified", 200)
+
 
 @app.route('/clear_noti_targets', methods=['GET'])
 def delete_targets():
