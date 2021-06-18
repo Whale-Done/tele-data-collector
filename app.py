@@ -3,13 +3,15 @@ import json
 from flask import request, make_response
 import telegram
 
+from tracker_app import app, db, redis_client
 from tracker_bot.mastermind import main_command_handler
 from tracker_bot.credentials import DEPLOY_URL, reset_key, deploy_bot_token, debug_bot_token, DEBUG_URL
-from tracker_app import app, db, redis_client
 from appconfig import AppConfig
 from flask import Flask
 from threading import Thread
 from time import sleep
+import pandas as pd
+from datetime import datetime
 
 # from flask_assets import Environment, Bundle
 
@@ -22,9 +24,8 @@ from time import sleep
 
 my_logs_keyboard_buttons = [[telegram.KeyboardButton('list view')],
                             [telegram.KeyboardButton('spending stats')],
-                                   [telegram.KeyboardButton('back to home')]]
+                            [telegram.KeyboardButton('back to home')]]
 my_logs_keyboard_markup = telegram.ReplyKeyboardMarkup(my_logs_keyboard_buttons)
-
 
 debug = AppConfig.debug
 
@@ -51,23 +52,20 @@ class ExpenseEntry(db.Model):
     submit_time = db.Column(db.String(128))
     type = db.Column(db.String(128))
 
-    # def __init__(self, username, amount, category, description, datetime, submit_time, type):
-    # def __init__(self):
-    # self.username = username
-    # self.amount = amount
-    # self.category = category
-    # self.description = description
-    # self.datetime = datetime
-    # self.submit_time = submit_time
-    # self.type = type
+
+class UserAction(db.Model):
+    __tablename__ = "user_actions"
+    __table_args__ = {'extend_existing': True}
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(128))
+    chat_id = db.Column(db.String(128))
+    datetime = db.Column(db.String(128))
+    input = db.Column(db.String(128))
 
 
 @app.route('/{}'.format(TOKEN), methods=['POST'])
 def respond():
-    # retrieve the message in JSON and then transform it to the Telegram object
-    print("Received message")
-    # for overwhelming updates, clear the update attemp (this line below)
-    # and have the method return 1 to clear all pending updates
     try:
         update = telegram.Update.de_json(request.get_json(force=True), bot)
     except:
@@ -75,7 +73,7 @@ def respond():
 
     if update.message:
         chat_id = update.message.chat.id
-        
+
         # keep track of chat_id for notification
         if redis_client.get("chatids") is not None:
             current_subscription = json.loads(redis_client.get("chatids"))
@@ -104,8 +102,9 @@ def respond():
                 replyList = ""
 
                 # Diagnostic feature
-                TARGET_COUNT = 25
-                entries = ExpenseEntry.query.filter(ExpenseEntry.username == username).order_by(ExpenseEntry.datetime.desc()).all()
+                TARGET_COUNT = 30
+                entries = ExpenseEntry.query.filter(ExpenseEntry.username == username).order_by(
+                    ExpenseEntry.datetime.desc()).all()
                 expense_detail_list = [{
                     'amount': entry.amount,
                     'category': entry.category,
@@ -117,21 +116,59 @@ def respond():
                     for entry in entries]
 
                 current_count = len(expense_detail_list)
-                
-                for entry in rs:
-                    replyList += f"{entry.type} ||| count: {entry.count}\n"
+
+                temp = sorted([{"type": entry.type, "count": entry.count} for entry in rs], key=lambda k: k['type'])
+
+                if len(expense_detail_list) != 0:
+                    replyList += "But your current stats are -\n"
+                    try:
+                        replyList += f"""{temp[0]["type"]} (Absolute want 🤤) count: *{temp[0]["count"]}*\n"""
+                    except:
+                        print("No range")
+                    try:
+                        replyList += f"""{temp[1]["type"]} (Probably a want?) count: *{temp[1]["count"]}*\n"""
+                    except:
+                        print("No range")
+                    try:
+                        replyList += f"""{temp[2]["type"]} (I don't know 🧐) count: *{temp[2]["count"]}*\n"""
+                    except:
+                        print("No range")
+                    try:
+                        replyList += f"""{temp[3]["type"]} (Probably a need?) count: *{temp[3]["count"]}*\n"""
+                    except:
+                        print("No range")
+                    try:
+                        replyList += f"""{temp[4]["type"]} (Absolute need 🥵) count: *{temp[4]["count"]}*\n"""
+                    except:
+                        print("No range")
+
+                sum = 0
+                has_error = False
+                for entry in temp:
+                    try:
+                        sum += int(entry["type"]) * int(entry["count"])
+                    except:
+                        has_error = True
+
+                if not has_error and current_count != 0:
+                    avg_score = sum / current_count
+                    replyList += f"""\n Your average Want Need Score is \n⭐️ {avg_score} ⭐️"""
+
+                    replyList += f"""\n\n The population average is \n🚧 Whale is still working on it 🤕🚧"""
 
                 # if target count not met, send this
                 if current_count <= TARGET_COUNT:
                     required_count = TARGET_COUNT - current_count
 
-                    bot.sendMessage(chat_id=chat_id, text=f"Let's see... \n\nwe still need {required_count} more entries to give you a more accurate report. \n\nBut your current stats are -\n{replyList}",
-                                            reply_to_message_id=msg_id, reply_markup=my_logs_keyboard_markup)
-                else:        
+                    bot.sendMessage(chat_id=chat_id,
+                                    text=f"Let's see... \n\nwe still need {required_count} more entries to give you a more accurate report. \n\n{replyList}",
+                                    reply_to_message_id=msg_id, reply_markup=my_logs_keyboard_markup,
+                                    parse_mode='Markdown')
+                else:
                     # target count is met, send a more detailed report
                     bot.sendMessage(chat_id=chat_id, text=f"Your stats -\n{replyList}",
-                                            reply_to_message_id=msg_id, reply_markup=my_logs_keyboard_markup)
-                                            
+                                    reply_to_message_id=msg_id, reply_markup=my_logs_keyboard_markup)
+
                 redis_client.set(username + "state", "user_query_logs")
             else:
                 redis_client.set(username + "state", state)
@@ -203,8 +240,9 @@ def drop_webhook():
         return "web hook delete failure"
 
 
-@app.route('/createall', methods=['GET'])
+@app.route('/hard-createall', methods=['GET'])
 def create_db_table():
+    db.drop_all()
     db.create_all()
     return "Created entries"
 
@@ -225,13 +263,97 @@ def get_entries():
     return make_response(json.dumps(expense_detail_list), 200)
 
 
+@app.route('/get-action-logs', methods=['GET'])
+def get_action_logs():
+    entries = UserAction.query.all()
+    action_list = [{
+        'username': entry.username,
+        'chat_id': entry.chat_id,
+        'datetime': entry.datetime,
+        'input': entry.input,
+    }
+        for entry in entries]
+    return make_response(json.dumps(action_list), 200)
+
+
+@app.route("/insert-expense-data", methods=['GET'])
+def insert_data():
+    df = pd.read_csv('data.csv')
+
+    # username                     cookehh
+    # amount                          20.0
+    # category              Transportation
+    # description             EZLINK topup
+    # purchase_type                      5
+    # submit_time      14/06/2021 00:21:33
+    # expense_time     14/06/2021 08:20:53
+    insert_rows = []
+    for index, row in df.iterrows():
+        entry = ExpenseEntry()
+        entry.username = row.username
+        entry.amount = row.amount
+        entry.category = row.category
+        entry.description = row.description
+        entry.type = row.purchase_type
+        entry.submit_time = datetime.strptime(row.submit_time, "%d/%m/%Y %H:%M:%S")
+        entry.datetime = datetime.strptime(row.expense_time, "%d/%m/%Y %H:%M:%S")
+        insert_rows.append(entry)
+
+    ExpenseEntry.query.delete()
+    db.session.add_all(insert_rows)
+    db.session.commit()
+
+    return make_response("Insert ok", 200)
+
+
 @app.route('/notifyall', methods=['GET'])
 def notify_all():
     if redis_client.get("chatids") is not None:
         list_of_chats = json.loads(redis_client.get("chatids"))
 
-        for id in list_of_chats: 
-            bot.send_message(id, "Hello! This is Whale calling for you to record your expense 🐳 \n\nHave a good one! 🤩")
+        for id in list_of_chats:
+            bot.send_message(id,
+                             "Hello! This is Whale calling for you to record your expense 🐳 \n\nHave a good one! 🤩")
+
+    return make_response("Notified", 200)
+
+
+@app.route('/notifyerror', methods=['GET'])
+def notify_all():
+    if redis_client.get("chatids") is not None:
+        list_of_chats = json.loads(redis_client.get("chatids"))
+
+        for id in list_of_chats:
+            bot.send_message(id,
+                             "Hello! This is Whale calling for you to record your expense 🐳 \n\nHave a good one! 🤩")
+
+    return make_response("Notified", 200)
+
+
+@app.route('/killnotify', methods=['GET'])
+def kill_notify():
+    if redis_client.get("chatids") is not None:
+        redis_client.delete("chatids")
+    return make_response("Notified", 200)
+
+
+@app.route('/notifywho', methods=['GET'])
+def notify_who():
+    if redis_client.get("chatids") is not None:
+        list_of_chats = json.loads(redis_client.get("chatids"))
+        return make_response(json.dumps(list_of_chats), 200)
+
+    return make_response("Nobody", 200)
+
+
+@app.route('/notifyupdate', methods=['GET'])
+def notify_update():
+    if redis_client.get("chatids") is not None:
+        list_of_chats = json.loads(redis_client.get("chatids"))
+
+        for id in list_of_chats:
+            bot.send_message(id,
+                             "Hello! Thank you for helping me the Money Whale grow! 🐳 \n\nThe whale can now give you slightly better spending stats break down 🥸📖\n\nhead over to /home -> my logs -> spending stats to check it out!")
 
     return make_response("Notified", 200)
 
@@ -241,6 +363,7 @@ def delete_targets():
     redis_client.delete("chatids")
 
     return make_response("Notified", 200)
+
 
 # def schedule_checker():
 #     while True:
