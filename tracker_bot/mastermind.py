@@ -39,7 +39,7 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
             redis_client.delete(user["username"] + "state")
             telebot_instance.sendMessage(
                 chat_id=chat_id,
-                text="What would you like to do",
+                text="Hello there! Thank you for using Whale 🐳 \n\nWhale is learning to help you understand your spending habits better\n\nuse /start to explore what Whale can do for you!",
                 reply_to_message_id=msg_id,
                 reply_markup=start_keyboard_markup,
             )
@@ -119,7 +119,7 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
         ):
             telebot_instance.sendMessage(
                 chat_id=chat_id,
-                text="What would you like to do",
+                text="Hello there! Thank you for using Whale 🐳 \n\nWhale is learning to help you understand your spending habits better\n\nuse /start to explore what Whale can do for you!",
                 reply_to_message_id=msg_id,
                 reply_markup=start_keyboard_markup,
             )
@@ -146,6 +146,7 @@ def main_command_handler(incoming_message, telebot_instance, redis_client, db):
                 username=username,
                 telebot_instance=telebot_instance,
                 db=db,
+                webhook_url=URL,
             )
 
         else:

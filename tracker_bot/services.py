@@ -2,7 +2,7 @@ import json
 from datetime import datetime, date
 import pytz
 
-from telegram import ReplyKeyboardRemove
+from telegram import ReplyKeyboardRemove, user
 
 from .model import UserAction, ExpenseEntry
 from .keyboard import (
@@ -199,7 +199,7 @@ class MasterMindService:
     def get_weighted_need_score():
         return 1
 
-    def user_query_diagnosis(text, chat_id, msg_id, telebot_instance, db, username):
+    def user_query_diagnosis(text, chat_id, msg_id, telebot_instance, db, username, webhook_url):
         action = UserAction()
         action.username = username
         action.chat_id = chat_id
@@ -275,6 +275,7 @@ class MasterMindService:
 
         if len(expense_detail_list) > 0:
             replyList += f"""\n Your average Want Need Score is \n⭐️ {"%.2f" % round(aggregate_sum/amount_sum, 2)} ⭐️"""
+            replyList += f"""\n\n 📝 View your expense list here \n {webhook_url}view-data?username={username}"""
 
         # replyList += f"""\n\n🚧 Whale is working on the following 🚧\nThe population average need index\nYour current percentile \nand many more! """
 
