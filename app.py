@@ -176,7 +176,7 @@ def drop_webhook():
 def create_db_table():
     db.drop_all()
     db.create_all()
-    return "Created entries"
+    return "Created tables"
 
 
 @app.route("/get-entries", methods=["GET"])
